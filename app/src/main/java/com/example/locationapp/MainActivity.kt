@@ -5,52 +5,55 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.locationapp.ui.theme.LocationAppTheme
 import android.Manifest
+import androidx.lifecycle.viewmodel.compose.viewModel
 import android.widget.Toast
 import androidx.compose.material3.Button
+import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
+import com.example.locationapp.ui.theme.LocationAppTheme
+import com.example.locationapp.ui.theme.LocationViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
+            val viewModel: LocationViewModel = viewModel()
             LocationAppTheme {
-                Surface(
-                    modifier =Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ){
-                    MyApp()
-                }
+               Surface(
+                   modifier = Modifier.fillMaxSize(),
+                   color = androidx.compose.ui.graphics.Color.White
+               ) {
+                   MyApp(viewModel)
+               }
             }
         }
     }
 }
 @Composable
-fun MyApp(){
+fun MyApp(viewModel: LocationViewModel = viewModel()){
     val context= LocalContext.current
     val locationsUtils= LocationsUtils(context)
-    LocationDisplay(locationsUtils,context = context)
+    LocationDisplay(locationsUtils, context, viewModel)
 }
 
 @Composable
 fun LocationDisplay(
     locationsUtils: LocationsUtils,
-    context: Context
+    context: Context,
+    viewModel: LocationViewModel
 ){
+    val location = viewModel.location.value
+
     val requestPermissionLauncher =rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = {permissions ->
@@ -58,6 +61,7 @@ fun LocationDisplay(
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION]== true
                 ){
             // I have access to location
+                locationsUtils.requestLocationUpdates(viewModel = viewModel)
             }else{
             // or not
 
@@ -95,11 +99,18 @@ fun LocationDisplay(
         modifier =Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
+        if(location != null){
+            Text(text = "Latitude: ${location.latitude}")
+            Text(text = "Longitude: ${location.longitude}")
+        }else{
+            Text(text = "Location not available")
+        }
         Text(text = "Location App")
 
         Button(onClick = {
                 if (locationsUtils.hasLocationPermission(context)) {
                 //
+                    locationsUtils.requestLocationUpdates(viewModel)
                 } else {
                     requestPermissionLauncher.launch(
                         arrayOf(

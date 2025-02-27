@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 class LocationViewModel: ViewModel()  {
 
     private val _locationData = mutableStateOf<LocationData?>(null)
-    val locationData: State<LocationData?> = _locationData
+    val location: State<LocationData?> = _locationData
 
     fun updateLocation(newLocation: LocationData){
         _locationData.value = newLocation
