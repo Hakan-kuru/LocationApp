@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import android.Manifest
+import android.location.Address
+import android.location.Geocoder
 import android.os.Looper
 import com.example.locationapp.ui.theme.LocationData
 import com.example.locationapp.ui.theme.LocationViewModel
@@ -13,6 +15,8 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.model.LatLng
+import java.util.Locale
 
 class LocationsUtils(val context: Context) {
 
@@ -47,5 +51,17 @@ class LocationsUtils(val context: Context) {
              context,
              Manifest.permission.ACCESS_COARSE_LOCATION
              ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun reserveGeocoderLocation(location: LocationData): String{
+        val geocoder = Geocoder(context, Locale.getDefault())
+        val coordinate = LatLng(location.latitude, location.longitude)
+        val addresses : MutableList<Address>? =
+            geocoder.getFromLocation(coordinate.latitude, coordinate.longitude, 1)
+        return if(addresses != null && addresses.isNotEmpty()){
+            addresses[0].getAddressLine(0)
+        }else{
+            "Unknown location"
+        }
     }
 }

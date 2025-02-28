@@ -1,6 +1,6 @@
 # LocationApp
 
-This project is a simple Android application built using **Jetpack Compose** that demonstrates how to request and manage location permissions. The app displays a button to request location access and provides feedback to the user based on their interaction with the permission prompts.
+This project is a simple Android application built using Jetpack Compose that demonstrates how to request, manage, and display user location data. The app requests location permissions, retrieves the user's latitude and longitude, and uses Geocoder to display the corresponding address.
 
 ---
 
@@ -9,6 +9,10 @@ This project is a simple Android application built using **Jetpack Compose** tha
 1. **Request Location Permissions**:
    - Handles both `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`.
    - Displays rationale when permissions are denied.
+
+2. **Geocoding Support**
+   -Uses FusedLocationProviderClient to fetch real-time location updates.
+   -Displays latitude, longitude, and address.
 
 2. **Compose UI**:
    - Uses Jetpack Compose for declarative UI design.
@@ -35,6 +39,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val viewModel: LocationViewModel = viewModel()
             LocationAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -49,31 +54,36 @@ class MainActivity : ComponentActivity() {
 ````
 ### Permissions Request Logic
 ````kotlin
-val requestPermissionLauncher = rememberLauncherForActivityResult(
-    ActivityResultContracts.RequestMultiplePermissions()
-) { permissions ->
-    if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
-        permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-        Toast.makeText(context, "Permissions granted!", Toast.LENGTH_SHORT).show()
-    } else {
-        val rationaleNeeded = ActivityCompat.shouldShowRequestPermissionRationale(
-            context as MainActivity, Manifest.permission.ACCESS_FINE_LOCATION
-        ) || ActivityCompat.shouldShowRequestPermissionRationale(
-            context, Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-        if (rationaleNeeded) {
-            Toast.makeText(context, "Please allow location access.", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(context, "Permission denied.", Toast.LENGTH_SHORT).show()
+val requestPermissionLauncher =rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = {permissions ->
+            if(permissions[Manifest.permission.ACCESS_FINE_LOCATION]== true &&
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION]== true
+                ){
+                locationsUtils.requestLocationUpdates(viewModel = viewModel)
+
+            }else{
+                val rationalRequired = ActivityCompat.shouldShowRequestPermissionRationale(
+                    context as MainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) || ActivityCompat.shouldShowRequestPermissionRationale(
+                    context ,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+                if(rationalRequired){
+                    Toast.makeText(context,
+                        "devam etmek için konum bilgilerinize izin vermeniz gerekiyor",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }else{
+                    Toast.makeText(context,
+                        "Elon Musk!! Bunu da dinle -Mahsun karaca-",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
         }
-    }
-}
-````
-### Manifest Configuration
-```XML
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 ````
 
 ### How It Works

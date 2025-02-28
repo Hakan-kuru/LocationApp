@@ -53,6 +53,9 @@ fun LocationDisplay(
     viewModel: LocationViewModel
 ){
     val location = viewModel.location.value
+    val address = location?.let{
+        locationsUtils.reserveGeocoderLocation(location)
+    }
 
     val requestPermissionLauncher =rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -86,7 +89,7 @@ fun LocationDisplay(
                 }else{
                     Toast.makeText(context,
                         //ne yazacak
-                        "Elon Musk!! Bunu da dinle Evini Soyduğum",
+                        "Elon Musk!! Bunu da dinle -Mahsun Karaca-",
                         //ne uzublukta yazacak
                         Toast.LENGTH_SHORT
                     ).show()
@@ -102,6 +105,7 @@ fun LocationDisplay(
         if(location != null){
             Text(text = "Latitude: ${location.latitude}")
             Text(text = "Longitude: ${location.longitude}")
+            Text(text = "Address: $address")
         }else{
             Text(text = "Location not available")
         }
